@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Clay Hacker Group</title>
+  <style>
+    /* Base Reset */
+    * { margin:0; padding:0; box-sizing:border-box; font-family:"Poppins",sans-serif; }
+    html,body { height:100%; }
+    body {
+      background:#000;
+      color:#e0e0e0;
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      align-items:center;
+      text-align:center;
+    }
+
+    /* Top-left auth row */
+    .auth-row {
+      position:fixed;
+      left:18px;
+      top:18px;
+      display:flex;
+      gap:10px;
+      z-index:20;
+    }
+    .auth-row button {
+      background:transparent;
+      color:#ddd;
+      border:1px solid #333;
+      padding:8px 12px;
+      border-radius:8px;
+      cursor:pointer;
+      transition:transform .15s ease, border-color .15s ease;
+      font-size:0.9rem;
+    }
+    .auth-row button:hover { transform:translateY(-2px); border-color:#fff; }
+
+    header { padding-top:64px; animation:fadeIn 1s ease; }
+    h1 { font-size:2.8rem; letter-spacing:2px; text-transform:uppercase; color:#fff; font-weight:600; }
+    p.tagline { margin-top:10px; font-size:1.05rem; color:#aaa; letter-spacing:1px; }
+
+    main { margin-top:84px; animation:fadeIn 1s ease; }
+    .action-btn {
+      background:transparent;
+      color:#fff;
+      border:2px solid #444;
+      padding:14px 40px;
+      margin:15px;
+      font-size:1rem;
+      letter-spacing:1px;
+      cursor:pointer;
+      transition:all 0.28s ease;
+      border-radius:12px;
+    }
+    .action-btn:hover { border-color:#fff; background:#111; transform:translateY(-3px); }
+
+    footer { margin-bottom:40px; color:#888; animation:fadeIn 1s ease; }
+    .contact-btn {
+      border-color:#555; color:#bbb; transition:0.3s; background:transparent; padding:8px 12px; border-radius:8px; cursor:pointer; border:1px solid #555;
+    }
+    .contact-btn:hover { border-color:#0af; color:#0af; background:#111; }
+
+    h1::after { content:""; display:block; width:60px; height:2px; background:#444; margin:12px auto 0; }
+
+    @keyframes fadeIn {
+      from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); }
+    }
+
+    /* small status banner */
+    #status {
+      position:fixed;
+      right:18px;
+      top:18px;
+      color:#bbb;
+      font-size:0.9rem;
+    }
+
+    .hidden { display:none !important; }
+  </style>
+</head>
+<body>
+  <div class="auth-row" id="authRow">
+    <button id="loginBtn" onclick="location.href='login.html'">Login</button>
+    <button id="signupBtn" onclick="location.href='signup.html'">Signup</button>
+  </div>
+
+  <div id="status" aria-live="polite"></div>
+
+  <header>
+    <h1>Clay Hacker Group</h1>
+    <p class="tagline">Welcome to the shadows of innovation.</p>
+  </header>
+
+  <main>
+    <button class="action-btn" onclick="location.href='chatsys.html'">💬 Chat Room</button>
+    <button class="action-btn" onclick="location.href='post-a.html'">📄 View Admin Posts</button>
+  </main>
+
+  <footer>
+    <p>Connect with us:</p>
+    <button class="contact-btn" onclick="window.open('https://t.me/thunderguyind', '_blank')">📨 Contact on Telegram</button>
+  </footer>
+
+  <script>
+    // Simple client-side auth state using localStorage "ch_user" (username)
+    (function(){
+      const statusEl = document.getElementById('status');
+      const authRow = document.getElementById('authRow');
+
+      function escapeText(s){
+        // minimal sanitize for display purposes (not DB related) to avoid XSS
+        const span = document.createElement('span');
+        span.textContent = s;
+        return span.innerHTML;
+      }
+
+      const currentUser = localStorage.getItem('ch_user');
+      if (currentUser) {
+        // hide login/signup, show logged-in status and a logout button
+        authRow.innerHTML = ""; // remove auth buttons
+        const welcome = document.createElement('div');
+        welcome.style.display = 'flex';
+        welcome.style.alignItems = 'center';
+        welcome.style.gap = '10px';
+
+        const name = document.createElement('div');
+        name.textContent = `Signed in as ${currentUser}`;
+        name.style.color = '#ccc';
+
+        const logoutBtn = document.createElement('button');
+        logoutBtn.textContent = 'Logout';
+        logoutBtn.onclick = function(){
+          localStorage.removeItem('ch_user');
+          // optionally remove session token if you had one
+          location.reload();
+        };
+        logoutBtn.style.background='transparent';
+        logoutBtn.style.border='1px solid #333';
+        logoutBtn.style.color='#ddd';
+        logoutBtn.style.padding='8px 10px';
+        logoutBtn.style.borderRadius='8px';
+        logoutBtn.style.cursor='pointer';
+
+        welcome.appendChild(name);
+        welcome.appendChild(logoutBtn);
+        authRow.appendChild(welcome);
+
+        statusEl.textContent = '';
+      } else {
+        statusEl.textContent = '';
+      }
+
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Posts — Clay Hacker Group</title>
+  <style>
+    body{background:#000;color:#eee;font-family:Poppins,system-ui; margin:0; padding:24px;}
+    .wrap{max-width:900px;margin:0 auto;}
+    header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    h1{font-size:20px}
+    .muted{color:#9aa;font-size:13px}
+    .post{background:#070707;border-radius:10px;padding:16px;margin-top:14px;border:1px solid #191919}
+    .meta{color:#7f9;font-size:13px;margin-bottom:8px}
+    .title{font-weight:600;font-size:16px;margin-bottom:8px}
+    .content{white-space:pre-wrap;color:#ddd}
+    .btn{background:transparent;border:1px solid #222;padding:8px 12px;border-radius:8px;color:#fff;cursor:pointer}
+    .corner{position:fixed;right:18px;bottom:18px}
+    .small{font-size:13px;color:#9aa}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Admin Posts</h1>
+        <div class="muted">Latest announcements published by admins</div>
+      </div>
+      <div>
+        <button class="btn" onclick="location.href='index.html'">Home</button>
+        <button class="btn" onclick="location.href='postadmin.html'">Admin</button>
+      </div>
+    </header>
+
+    <div id="postsContainer"></div>
+
+    <div style="margin-top:20px" class="small">If you are the admin and don't see the editor, sign in via Admin → Post editor (postadmin.html)</div>
+  </div>
+
+  <div class="corner"><button class="btn" onclick="location.href='index.html'">Back</button></div>
+
+<script>
+  async function loadPosts(){
+    try {
+      const res = await fetch('/api/posts');
+      if (!res.ok) {
+        document.getElementById('postsContainer').innerHTML = '<div class="muted">Could not load posts.</div>';
+        return;
+      }
+      const data = await res.json();
+      const posts = data.posts || [];
+      const cont = document.getElementById('postsContainer');
+      if (posts.length === 0){
+        cont.innerHTML = '<div class="muted" style="margin-top:18px">No posts yet.</div>';
+        return;
+      }
+      cont.innerHTML = '';
+      posts.forEach(p=>{
+        const el = document.createElement('div');
+        el.className = 'post';
+        el.innerHTML = `
+          <div class="meta">By <strong>${escapeHtml(p.author)}</strong> • <span class="muted">${new Date(p.time).toLocaleString()}</span></div>
+          <div class="title">${escapeHtml(p.title)}</div>
+          <div class="content">${escapeHtml(p.content)}</div>
+        `;
+        cont.appendChild(el);
+      });
+    } catch(e){
+      document.getElementById('postsContainer').innerHTML = '<div class="muted">Error loading posts.</div>';
+      console.error(e);
+    }
+  }
+
+  function escapeHtml(s){
+    if(!s) return '';
+    return s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
+  }
+
+  loadPosts();
+</script>
+</body>
+</html>

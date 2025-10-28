@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Signup | Clay Hacker Group</title>
+  <style>
+    body {
+      background: #000;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      font-family: "Poppins", sans-serif;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      width: 300px;
+      gap: 15px;
+    }
+    input {
+      padding: 12px;
+      border: 2px solid #444;
+      border-radius: 10px;
+      background: transparent;
+      color: #fff;
+    }
+    button {
+      padding: 12px;
+      border: 2px solid #555;
+      background: transparent;
+      color: #fff;
+      cursor: pointer;
+      border-radius: 10px;
+      transition: 0.3s;
+    }
+    button:hover {
+      background: #111;
+    }
+    #msg {
+      margin-top: 10px;
+      color: #0af;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h2>Sign Up for Clay Hacker Group</h2>
+  <form id="signupForm">
+    <input name="username" placeholder="Username" required />
+    <input name="password" type="password" placeholder="Password" required />
+    <input name="confirm" type="password" placeholder="Confirm Password" required />
+    <button type="submit">Register</button>
+  </form>
+  <p id="msg"></p>
+  <p>Already have an account? <a href="login.html" style="color:#0af;">Login</a></p>
+
+  <script>
+    document.getElementById("signupForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      const f = e.target;
+      const res = await fetch("/api/signup", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+          username: f.username.value,
+          password: f.password.value,
+          confirm: f.confirm.value
+        })
+      });
+      const data = await res.json();
+      const msg = document.getElementById("msg");
+      if (res.ok) {
+        msg.textContent = "✅ Registered successfully! Redirecting to login...";
+        setTimeout(()=>location.href="login.html", 1000);
+      } else {
+        msg.textContent = "❌ " + (data.error || "Error");
+      }
+    });
+  </script>
+</body>
+</html>

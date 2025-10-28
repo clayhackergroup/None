@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Post Admin — Clay Hacker Group</title>
+  <style>
+    :root{ --bg:#000; --muted:#9aa; --panel:#070707; --accent:#0af; --card:#0f0f10; color-scheme:dark;}
+    *{box-sizing:border-box;font-family:Poppins,system-ui,-apple-system,Segoe UI,Roboto,Arial;}
+    body{margin:0;background:var(--bg);color:#eee;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:28px;}
+    .wrap{width:100%;max-width:980px;}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border:1px solid #1a1a1a; padding:22px; border-radius:12px; box-shadow:0 6px 30px rgba(0,0,0,0.6);}
+    h1{font-size:20px;margin-bottom:6px;letter-spacing:1px}
+    p.lead{color:var(--muted);margin:0 0 18px 0}
+    form{display:flex;flex-direction:column;gap:12px}
+    input, textarea{background:var(--panel);border:1px solid #222;padding:12px;border-radius:10px;color:#eee;outline:none}
+    textarea{min-height:220px;resize:vertical}
+    button{align-self:flex-start;padding:10px 16px;border-radius:10px;border:1px solid #2a2a2a;background:transparent;color:#fff;cursor:pointer}
+    .hint{font-size:13px;color:var(--muted)}
+    #loginBox{max-width:520px;margin:0 auto}
+    .row{display:flex;gap:10px}
+    .flex{flex:1}
+    .msg{min-height:24px;color:#f88}
+    .ok{color:#8fd79e}
+    .top-right{position:fixed;right:18px;top:18px}
+    .small{font-size:13px;color:var(--muted)}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card" id="loginCard">
+      <h1>Admin access — Post editor</h1>
+      <p class="lead">Enter admin credentials and the 10-letter phase key to unlock the post editor.</p>
+
+      <div id="loginBox">
+        <form id="adminLoginForm" autocomplete="off">
+          <input name="username" placeholder="Admin username" required />
+          <input name="password" type="password" placeholder="Admin password" required />
+          <input name="phasekey" placeholder="Phase key (10 letters)" required />
+          <div class="row">
+            <button type="submit">Unlock editor</button>
+            <button type="button" id="loadPostsBtn">View posts page</button>
+          </div>
+          <div class="msg" id="loginMsg"></div>
+          <p class="small">Note: change default admin credentials in server-side config for production.</p>
+        </form>
+      </div>
+    </div>
+
+    <div class="card" id="editorCard" style="margin-top:16px;display:none;">
+      <h1>Create post</h1>
+      <p class="lead">Write a post that will appear on the public posts page.</p>
+
+      <form id="postForm">
+        <input name="title" placeholder="Title" maxlength="200" required />
+        <textarea name="content" placeholder="Write your post here..." required></textarea>
+        <div class="row">
+          <button type="submit">Publish post</button>
+          <button type="button" id="logoutAdmin">Logout</button>
+          <button type="button" id="openPosts">Open posts page</button>
+        </div>
+        <div class="msg" id="postMsg"></div>
+      </form>
+    </div>
+  </div>
+
+<script>
+  async function api(path, method='GET', body=null){
+    const opts = { method, headers: {} };
+    if (body !== null){
+      opts.headers['Content-Type']='application/json';
+      opts.body = JSON.stringify(body);
+    }
+    const res = await fetch(path, opts);
+    const data = await res.json().catch(()=>({}));
+    return { ok: res.ok, status: res.status, data };
+  }
+
+  const loginCard = document.getElementById('loginCard');
+  const editorCard = document.getElementById('editorCard');
+  const adminLoginForm = document.getElementById('adminLoginForm');
+  const loginMsg = document.getElementById('loginMsg');
+  const postForm = document.getElementById('postForm');
+  const postMsg = document.getElementById('postMsg');
+
+  adminLoginForm.addEventListener('submit', async e=>{
+    e.preventDefault();
+    loginMsg.textContent = '';
+    const form = e.target;
+    const payload = {
+      username: form.username.value.trim(),
+      password: form.password.value,
+      phasekey: form.phasekey.value.trim()
+    };
+    const r = await api('/admin/login','POST',payload);
+    if (r.ok){
+      loginMsg.textContent = 'Unlocked — editor available';
+      loginMsg.className = 'msg ok';
+      loginCard.style.display = 'none';
+      editorCard.style.display = 'block';
+    } else {
+      loginMsg.textContent = r.data.error || 'Auth failed';
+      loginMsg.className = 'msg';
+    }
+  });
+
+  postForm.addEventListener('submit', async e=>{
+    e.preventDefault();
+    postMsg.textContent = '';
+    const f = e.target;
+    const payload = { title: f.title.value.trim(), content: f.content.value.trim() };
+    const r = await api('/admin/post','POST',payload);
+    if (r.ok){
+      postMsg.textContent = 'Post published';
+      postMsg.className = 'msg ok';
+      f.title.value=''; f.content.value='';
+      // brief flash then open posts
+      setTimeout(()=> location.href='post-a.html',800);
+    } else {
+      postMsg.textContent = r.data.error || 'Publish failed';
+      postMsg.className = 'msg';
+    }
+  });
+
+  document.getElementById('logoutAdmin').addEventListener('click', async ()=>{
+    await api('/admin/logout','POST');
+    editorCard.style.display='none';
+    loginCard.style.display='block';
+  });
+
+  document.getElementById('openPosts').addEventListener('click', ()=> location.href='post-a.html');
+  document.getElementById('loadPostsBtn').addEventListener('click', ()=> location.href='post-a.html');
+
+  // Optionally detect if already admin session and show editor immediately
+  (async ()=>{
+    // Try to fetch posts endpoint to see if session exists (no direct /admin/me endpoint)
+    // We'll attempt to POST a harmless request? Not ideal. So just silently do nothing.
+  })();
+</script>
+</body>
+</html>
